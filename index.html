@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Who the Fact Are You? — Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:ital,wght@0,300;0,400;0,600;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f9f4e9;
+    --surface: #ffffff;
+    --text: #351b3d;
+    --text-secondary: #7a569b;
+    --accent: #592c82;
+    --accent-hover: #351b3d;
+    --selected: #22c55e;
+    --selected-text: #fff;
+    --border: #ded5e6;
+    --cell-bg: #fff;
+    --cell-hover: #f4dffd;
+    --bingo-bg: rgba(53,27,61,0.8);
+    --btn-bg: #592c82;
+    --btn-text: #fff;
+    --btn-secondary-bg: #ded5e6;
+    --btn-secondary-text: #351b3d;
+    --shadow: 0 2px 12px rgba(89,44,130,0.1);
+    --toast-bg: #351b3d;
+    --toast-text: #fff;
+  }
+
+  [data-theme="dark"] {
+    --bg: #1a0e22;
+    --surface: #251436;
+    --text: #ede6f2;
+    --text-secondary: #bda4d0;
+    --accent: #c95df6;
+    --accent-hover: #9a0cd5;
+    --selected: #16a34a;
+    --selected-text: #fff;
+    --border: #3a2450;
+    --cell-bg: #251436;
+    --cell-hover: #1a2e1a;
+    --bingo-bg: rgba(26,14,34,0.92);
+    --btn-bg: #c95df6;
+    --btn-text: #1a0e22;
+    --btn-secondary-bg: #3a2450;
+    --btn-secondary-text: #d4b8e8;
+    --shadow: 0 2px 12px rgba(0,0,0,0.4);
+    --toast-bg: #ede6f2;
+    --toast-text: #1a0e22;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    width: 100%;
+  }
+
+  .logo-text {
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+
+  .main-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 8px 16px 0;
+    width: 100%;
+  }
+
+  .hero-text {
+    text-align: left;
+  }
+
+  .hero-text h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .hero-text p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .robot-img {
+    width: 80px;
+    height: auto;
+    flex-shrink: 0;
+    animation: floatBob 3s ease-in-out infinite;
+    filter: drop-shadow(0 4px 12px rgba(89, 44, 130, 0.3));
+  }
+
+  @keyframes floatBob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  .page-header {
+    text-align: center;
+    padding: 8px 16px 0;
+    width: 100%;
+    display: none;
+  }
+
+  .page-header h1 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+
+  .page-header p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 0;
+    width: 100%;
+  }
+
+  .toolbar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .toolbar button:active { transform: scale(0.96); }
+
+  .btn-primary { background: var(--btn-bg); color: var(--btn-text); }
+  .btn-primary:hover { background: var(--accent-hover); }
+
+  .btn-secondary { background: var(--btn-secondary-bg); color: var(--btn-secondary-text); }
+  .btn-secondary:hover { opacity: 0.85; }
+
+  .board-container { width: 100%; padding: 0 0 16px; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    user-select: none;
+  }
+
+  .cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 10px;
+    background: var(--cell-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s;
+    word-break: break-word;
+    hyphens: auto;
+    box-shadow: var(--shadow);
+  }
+
+  .cell:hover { background: var(--cell-hover); transform: scale(1.03); }
+
+  .cell.selected {
+    background: var(--selected);
+    color: var(--selected-text);
+    border-color: var(--selected);
+    transform: scale(1.05);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+  }
+
+  .cell.bingo-cell { animation: pulseGlow 0.6s ease-in-out infinite alternate; }
+
+  @keyframes pulseGlow {
+    from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
+    to   { box-shadow: 0 0 24px rgba(34, 197, 94, 0.8); }
+  }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bingo-bg);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .overlay.show { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .overlay h2 {
+    font-size: 3rem;
+    font-weight: 900;
+    color: #fff;
+    text-align: center;
+    line-height: 1.15;
+    text-shadow: 0 0 40px rgba(89, 44, 130, 0.8), 0 0 80px rgba(201, 93, 246, 0.4);
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+
+  @keyframes bounceIn {
+    0%   { transform: scale(0.3); opacity: 0; }
+    50%  { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  .overlay button {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: var(--btn-bg);
+    color: #fff;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--toast-bg);
+    color: var(--toast-text);
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 200;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  #confetti { position: fixed; inset: 0; z-index: 150; pointer-events: none; }
+
+  .page-footer {
+    width: 100%;
+    text-align: center;
+    padding: 16px 24px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .page-footer .heart { color: #fd4500; }
+
+  @media (max-width: 860px) {
+    .robot-img { width: 70px; }
+  }
+
+  @media (max-width: 640px) {
+    .main-layout { padding: 0 16px; }
+    .hero { gap: 12px; }
+    .hero-text h1 { font-size: 1.4rem; }
+    .robot-img { width: 60px; }
+    .top-bar { padding: 10px 16px; }
+    .logo-text { font-size: 1.6rem; }
+    .page-footer { padding: 12px 16px; }
+  }
+
+  @media (max-width: 400px) {
+    .hero-text h1 { font-size: 1.2rem; }
+    .robot-img { width: 50px; }
+    .cell { font-size: 0.7rem; padding: 4px; border-radius: 8px; }
+    .board { gap: 6px; }
+    .toolbar button { padding: 7px 12px; font-size: 0.8rem; }
+    .overlay h2 { font-size: 2rem; }
+  }
+
+  @media (min-width: 401px) and (max-width: 600px) {
+    .cell { font-size: 0.78rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <span class="logo-text">IAG</span>
+</div>
+
+<div class="main-layout">
+  <div class="hero">
+    <div class="hero-text">
+      <h1>Who the Fact Are You?</h1>
+      <p>Find the answer on your board and tap it!</p>
+    </div>
+    <img src="robot.png" alt="DigiDays Robot" class="robot-img">
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-primary" onclick="randomiseBoard()" title="Shuffle your board">&#x1f500; Randomise</button>
+    <button class="btn-secondary" onclick="resetBoard()" title="Clear all selections">&#x21a9;&#xfe0f; Reset</button>
+    <button class="btn-primary" onclick="copyBoard()" title="Copy board screenshot to clipboard">&#x1f4cb; Copy Board</button>
+    <button class="btn-secondary" onclick="toggleDarkMode()" id="themeBtn" title="Toggle dark mode">&#x1f319; Dark Mode</button>
+  </div>
+
+  <div class="board-container">
+    <div class="board" id="board"></div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <h2>&#x1f389; BINGO! &#x1f389;</h2>
+  <p id="bingoMessage" style="color:#fff;font-size:1.1rem;">You got 4 in a row!</p>
+  <button onclick="dismissOverlay()">Keep Playing</button>
+</div>
+
+<canvas id="confetti"></canvas>
+<div class="toast" id="toast"></div>
+
+<div class="page-footer">Made with <span class="heart">&hearts;</span> by Engage Squared</div>
+
+<script>
+  const BINGO_ITEMS = [
+    "Synergy", "Pivot", "Bandwidth", "Leverage", "Alignment",
+    "Deep Dive", "Touch Base", "Quick Wins", "Action Items", "Drill Down",
+    "Game Changer", "Best Practice", "Stakeholders", "Value-Add", "Pain Point",
+    "Loop In", "On My Radar", "Circle Back", "Move Needle", "Low-Hanging",
+    "Unpack That", "Streamline", "Onboarding", "KPIs", "Ecosystem",
+    "Scalable", "Proactive", "Roadmap", "Empower", "Innovate", "Agile", "Optimize"
+  ];
+
+  const GRID = 4;
+  const TOTAL = GRID * GRID;
+  let cells = [];
+  let bingoLines = [];
+
+  function init() {
+    buildBoard(shuffle([...BINGO_ITEMS]).slice(0, TOTAL));
+    applyStoredTheme();
+  }
+
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function buildBoard(items) {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    cells = items.map((text, idx) => {
+      const div = document.createElement('div');
+      div.className = 'cell';
+      div.textContent = text;
+      div.setAttribute('role', 'button');
+      div.setAttribute('aria-pressed', 'false');
+      div.addEventListener('click', () => toggleCell(idx));
+      board.appendChild(div);
+      return { text, selected: false, el: div };
+    });
+    bingoLines = [];
+  }
+
+  function toggleCell(idx) {
+    cells[idx].selected = !cells[idx].selected;
+    cells[idx].el.classList.toggle('selected', cells[idx].selected);
+    cells[idx].el.setAttribute('aria-pressed', String(cells[idx].selected));
+    checkBingo();
+  }
+
+  function randomiseBoard() {
+    dismissOverlay();
+    clearConfetti();
+    buildBoard(shuffle([...BINGO_ITEMS]).slice(0, TOTAL));
+    showToast('Board randomised!');
+  }
+
+  function resetBoard() {
+    dismissOverlay();
+    clearConfetti();
+    cells.forEach(c => {
+      c.selected = false;
+      c.el.classList.remove('selected', 'bingo-cell');
+      c.el.setAttribute('aria-pressed', 'false');
+    });
+    bingoLines = [];
+    showToast('Board reset!');
+  }
+
+  function checkBingo() {
+    const lines = getLines();
+    const newWins = [];
+    for (const line of lines) {
+      if (line.every(i => cells[i].selected)) newWins.push(line);
+    }
+    cells.forEach(c => c.el.classList.remove('bingo-cell'));
+    if (newWins.length > 0) {
+      const winIndices = new Set(newWins.flat());
+      winIndices.forEach(i => cells[i].el.classList.add('bingo-cell'));
+      if (bingoLines.length === 0 || newWins.length > bingoLines.length) showBingo();
+    }
+    bingoLines = newWins;
+  }
+
+  function getLines() {
+    const lines = [];
+    for (let r = 0; r < GRID; r++) lines.push(Array.from({ length: GRID }, (_, c) => r * GRID + c));
+    for (let c = 0; c < GRID; c++) lines.push(Array.from({ length: GRID }, (_, r) => r * GRID + c));
+    lines.push(Array.from({ length: GRID }, (_, i) => i * GRID + i));
+    lines.push(Array.from({ length: GRID }, (_, i) => i * GRID + (GRID - 1 - i)));
+    return lines;
+  }
+
+  const BINGO_MESSAGES = [
+    'You got 4 in a row!',
+    'Now THAT\'s who the fact you are!',
+    'You\'re on fire! 🔥',
+    'Absolute legend! 🏆',
+    'Nailed it! 💅',
+    'Who the fact ARE you?! 🤩',
+    'That was fast! ⚡',
+    'Champion status unlocked! 🥇',
+    'Look at you go! 🚀',
+    'You really know your facts!'
+  ];
+
+  function showBingo() {
+    const msg = BINGO_MESSAGES[Math.floor(Math.random() * BINGO_MESSAGES.length)];
+    document.getElementById('bingoMessage').textContent = msg;
+    document.getElementById('overlay').classList.add('show');
+    launchConfetti();
+  }
+
+  function dismissOverlay() {
+    document.getElementById('overlay').classList.remove('show');
+  }
+
+  function copyBoard() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const scale = 2;
+    const cellSize = 130;
+    const gap = 10;
+    const padding = 28;
+    const headerH = 56;
+    const footerH = bingoLines.length > 0 ? 48 : 16;
+    const creditH = 28;
+    const boardSize = GRID * cellSize + (GRID - 1) * gap;
+    const w = boardSize + padding * 2;
+    const h = headerH + boardSize + padding * 2 + footerH + creditH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+
+    const bg      = isDark ? '#1a0e22' : '#f9f4e9';
+    const cellBg  = isDark ? '#251436' : '#ffffff';
+    const selBg   = isDark ? '#16a34a' : '#22c55e';
+    const textCol = isDark ? '#ede6f2' : '#351b3d';
+    const selText = '#ffffff';
+    const border  = isDark ? '#3a2450' : '#ded5e6';
+    const accent  = isDark ? '#c95df6' : '#592c82';
+
+    roundRect(ctx, 0, 0, w, h, 16, bg);
+
+    ctx.fillStyle = accent;
+    ctx.font = 'bold 20px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Who the Fact Are You?', w / 2, headerH / 2 + 4);
+
+    const winSet = new Set(bingoLines.flat());
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        const idx = r * GRID + c;
+        const cell = cells[idx];
+        const x = padding + c * (cellSize + gap);
+        const y = headerH + padding + r * (cellSize + gap);
+        const isSel = cell.selected;
+
+        roundRect(ctx, x, y, cellSize, cellSize, 12, isSel ? selBg : cellBg);
+        if (!isSel) {
+          ctx.strokeStyle = border;
+          ctx.lineWidth = 2;
+          roundRectStroke(ctx, x, y, cellSize, cellSize, 12);
+        }
+        if (winSet.has(idx)) {
+          ctx.shadowColor = selBg;
+          ctx.shadowBlur = 16;
+          roundRect(ctx, x, y, cellSize, cellSize, 12, selBg);
+          ctx.shadowBlur = 0;
+        }
+        ctx.fillStyle = isSel ? selText : textCol;
+        ctx.font = '600 12px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        wrapText(ctx, cell.text, x + cellSize / 2, y + cellSize / 2, cellSize - 16, 15);
+      }
+    }
+
+    if (bingoLines.length > 0) {
+      ctx.fillStyle = accent;
+      ctx.font = 'bold 18px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('\u{1f389} Who the Fact Are You?! \u{1f389}', w / 2, headerH + padding * 2 + boardSize + 24);
+    }
+
+    ctx.fillStyle = isDark ? '#888' : '#999';
+    ctx.font = '11px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Made with \u2665 by Engage Squared', w - padding, h - creditH / 2 - 4);
+
+    canvas.toBlob(blob => {
+      if (!blob) { showToast('Failed to create image'); return; }
+      try {
+        navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]).then(() => showToast('Board screenshot copied!'))
+         .catch(() => fallbackDownload(canvas));
+      } catch (e) { fallbackDownload(canvas); }
+    }, 'image/png');
+  }
+
+  function fallbackDownload(canvas) {
+    const a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'bingo-board.png';
+    a.click();
+    showToast('Image downloaded (clipboard not supported)');
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
+  }
+
+  function roundRectStroke(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  function wrapText(ctx, text, x, y, maxW, lineH) {
+    const words = text.split(' ');
+    const lines = [];
+    let cur = '';
+    for (const word of words) {
+      const test = cur ? cur + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && cur) { lines.push(cur); cur = word; }
+      else cur = test;
+    }
+    if (cur) lines.push(cur);
+    const startY = y - ((lines.length - 1) * lineH) / 2;
+    for (let i = 0; i < lines.length; i++) ctx.fillText(lines[i], x, startY + i * lineH);
+  }
+
+  function toggleDarkMode() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const newTheme = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', newTheme);
+    try { localStorage.setItem('bingo-theme', newTheme); } catch(e) {}
+    updateThemeBtn(newTheme);
+  }
+
+  function applyStoredTheme() {
+    let theme = 'light';
+    try { theme = localStorage.getItem('bingo-theme') || 'light'; } catch(e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+    updateThemeBtn(theme);
+  }
+
+  function updateThemeBtn(theme) {
+    const btn = document.getElementById('themeBtn');
+    btn.textContent = theme === 'dark' ? '\u2600\ufe0f Light Mode' : '\u{1f319} Dark Mode';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  let confettiPieces = [];
+  let confettiRaf = null;
+
+  function launchConfetti() {
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    confettiPieces = [];
+    const colors = ['#592c82','#9a0cd5','#c95df6','#d9d006','#fd4500','#00b5df','#351b3d','#f9f4e9'];
+    for (let i = 0; i < 150; i++) {
+      confettiPieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        w: Math.random() * 10 + 5,
+        h: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 4,
+        vy: Math.random() * 4 + 2,
+        rotation: Math.random() * 360,
+        spin: (Math.random() - 0.5) * 8
+      });
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      for (const p of confettiPieces) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.05; p.rotation += p.spin;
+        if (p.y < canvas.height + 20) alive = true;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+      if (alive) confettiRaf = requestAnimationFrame(draw);
+      else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    draw();
+  }
+
+  function clearConfetti() {
+    if (confettiRaf) cancelAnimationFrame(confettiRaf);
+    const canvas = document.getElementById('confetti');
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    confettiPieces = [];
+  }
+
+  window.addEventListener('resize', () => {
+    const canvas = document.getElementById('confetti');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+
+  init();
+</script>
+</body>
+</html>
