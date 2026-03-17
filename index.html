@@ -442,87 +442,121 @@
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const scale = 2;
     const cellSize = 130;
-    const gap = 10;
-    const padding = 28;
-    const headerH = 56;
-    const footerH = bingoLines.length > 0 ? 48 : 16;
-    const creditH = 28;
+    const gap = 16;
+    const padding = 20;
     const boardSize = GRID * cellSize + (GRID - 1) * gap;
     const w = boardSize + padding * 2;
-    const h = headerH + boardSize + padding * 2 + footerH + creditH;
+    const headerGap = 12;
+    const bingoMsgH = bingoLines.length > 0 ? 40 : 0;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = w * scale;
-    canvas.height = h * scale;
-    const ctx = canvas.getContext('2d');
-    ctx.scale(scale, scale);
+    const headerSrc    = isDark ? 'assets/Bingo Dark/Header Dark Version_600x100.png'   : 'assets/Bingo Light/Header Light Version_600x100.png';
+    const footerLeftSrc  = isDark ? 'assets/Bingo Dark/Digital Workplace_White.png'          : 'assets/Bingo Light/Digital Workplace.png';
+    const footerRightSrc = isDark ? 'assets/Bingo Dark/E2 logo white.png'                    : 'assets/Bingo Light/E2 Logo.png';
 
-    const bg      = isDark ? '#1a0e22' : '#f9f4e9';
-    const cellBg  = isDark ? '#251436' : '#ffffff';
-    const selBg   = isDark ? '#16a34a' : '#22c55e';
-    const textCol = isDark ? '#ede6f2' : '#351b3d';
-    const selText = '#ffffff';
-    const border  = isDark ? '#3a2450' : '#ded5e6';
-    const accent  = isDark ? '#c95df6' : '#592c82';
-
-    roundRect(ctx, 0, 0, w, h, 16, bg);
-
-    ctx.fillStyle = accent;
-    ctx.font = 'bold 20px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('Who the Fact Are You?', w / 2, headerH / 2 + 4);
-
-    const winSet = new Set(bingoLines.flat());
-    for (let r = 0; r < GRID; r++) {
-      for (let c = 0; c < GRID; c++) {
-        const idx = r * GRID + c;
-        const cell = cells[idx];
-        const x = padding + c * (cellSize + gap);
-        const y = headerH + padding + r * (cellSize + gap);
-        const isSel = cell.selected;
-
-        roundRect(ctx, x, y, cellSize, cellSize, 12, isSel ? selBg : cellBg);
-        if (!isSel) {
-          ctx.strokeStyle = border;
-          ctx.lineWidth = 2;
-          roundRectStroke(ctx, x, y, cellSize, cellSize, 12);
-        }
-        if (winSet.has(idx)) {
-          ctx.shadowColor = selBg;
-          ctx.shadowBlur = 16;
-          roundRect(ctx, x, y, cellSize, cellSize, 12, selBg);
-          ctx.shadowBlur = 0;
-        }
-        ctx.fillStyle = isSel ? selText : textCol;
-        ctx.font = '600 12px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        wrapText(ctx, cell.text, x + cellSize / 2, y + cellSize / 2, cellSize - 16, 15);
-      }
+    function loadImg(src) {
+      return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = src; });
     }
 
-    if (bingoLines.length > 0) {
-      ctx.fillStyle = accent;
-      ctx.font = 'bold 18px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('\u{1f389} Who the Fact Are You?! \u{1f389}', w / 2, headerH + padding * 2 + boardSize + 24);
-    }
+    Promise.all([loadImg(headerSrc), loadImg(footerLeftSrc), loadImg(footerRightSrc)])
+      .then(([headerImg, leftImg, rightImg]) => {
+        const headerH    = Math.round(w * headerImg.naturalHeight / headerImg.naturalWidth);
+        const bingoMsgH  = bingoLines.length > 0 ? 40 : 0;
+        const footerH    = 50;
+        const h = headerH + headerGap + boardSize + (bingoMsgH || 12) + footerH;
 
-    ctx.fillStyle = isDark ? '#888' : '#999';
-    ctx.font = '11px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText('Made with \u2665 by Engage Squared', w - padding, h - creditH / 2 - 4);
+        const canvas = document.createElement('canvas');
+        canvas.width  = w * scale;
+        canvas.height = h * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
 
-    canvas.toBlob(blob => {
-      if (!blob) { showToast('Failed to create image'); return; }
-      try {
-        navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blob })
-        ]).then(() => showToast('Board screenshot copied!'))
-         .catch(() => fallbackDownload(canvas));
-      } catch (e) { fallbackDownload(canvas); }
-    }, 'image/png');
+        const bg       = isDark ? '#1a0e22' : '#f9f4e9';
+        const cellBg   = isDark ? '#251436' : '#ffffff';
+        const selBg    = isDark ? '#c95df6' : '#592c82';
+        const textCol  = isDark ? '#ede6f2' : '#351b3d';
+        const selText  = '#ffffff';
+        const border   = isDark ? '#3a2450' : '#ded5e6';
+        const accent   = isDark ? '#c95df6' : '#592c82';
+        const accentColors = ['#d9d006', '#fd4500', '#00b5df'];
+
+        // Background
+        roundRect(ctx, 0, 0, w, h, 0, bg);
+
+        // Header image
+        ctx.drawImage(headerImg, 0, 0, w, headerH);
+
+        // Board
+        const boardY = headerH + headerGap;
+        const winSet = new Set(bingoLines.flat());
+        for (let r = 0; r < GRID; r++) {
+          for (let c = 0; c < GRID; c++) {
+            const idx  = r * GRID + c;
+            const cell = cells[idx];
+            const x    = padding + c * (cellSize + gap);
+            const y    = boardY  + r * (cellSize + gap);
+            const isSel = cell.selected;
+            const isWin = winSet.has(idx);
+
+            // Cell background
+            roundRect(ctx, x, y, cellSize, cellSize, 12, isSel ? selBg : cellBg);
+
+            // Border for unselected
+            if (!isSel) {
+              ctx.strokeStyle = border;
+              ctx.lineWidth = 2;
+              roundRectStroke(ctx, x, y, cellSize, cellSize, 12);
+            }
+
+            // Top accent bar (4px)
+            const barColor = isSel ? 'rgba(255,255,255,0.5)' : accentColors[idx % 3];
+            topBarRect(ctx, x, y, cellSize, 4, 12, barColor);
+
+            // Bingo win highlight
+            if (isWin) {
+              ctx.strokeStyle = accentColors[idx % 3];
+              ctx.lineWidth = 3;
+              ctx.shadowColor = accentColors[idx % 3];
+              ctx.shadowBlur = 12;
+              roundRectStroke(ctx, x, y, cellSize, cellSize, 12);
+              ctx.shadowBlur = 0;
+            }
+
+            // Text
+            ctx.fillStyle = isSel ? selText : textCol;
+            ctx.font = '600 12px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            wrapText(ctx, cell.text, x + cellSize / 2, y + cellSize / 2, cellSize - 16, 15);
+          }
+        }
+
+        // Bingo message
+        if (bingoLines.length > 0) {
+          ctx.fillStyle = accent;
+          ctx.font = 'bold 17px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('\u{1f389} Who the Fact Are You?! \u{1f389}', w / 2, boardY + boardSize + bingoMsgH / 2 + 4);
+        }
+
+        // Footer logos — left and right, vertically centred
+        const footerY = h - footerH;
+        const logoH = 30;
+        const leftW  = Math.round(logoH * leftImg.naturalWidth  / leftImg.naturalHeight);
+        const rightW = Math.round(logoH * rightImg.naturalWidth / rightImg.naturalHeight);
+        ctx.drawImage(leftImg,  padding,              footerY + (footerH - logoH) / 2, leftW,  logoH);
+        ctx.drawImage(rightImg, w - padding - rightW, footerY + (footerH - logoH) / 2, rightW, logoH);
+
+        canvas.toBlob(blob => {
+          if (!blob) { showToast('Failed to create image'); return; }
+          try {
+            navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+              .then(() => showToast('Board screenshot copied!'))
+              .catch(() => fallbackDownload(canvas));
+          } catch (e) { fallbackDownload(canvas); }
+        }, 'image/png');
+      })
+      .catch(() => showToast('Failed to load images for screenshot'));
   }
 
   function fallbackDownload(canvas) {
@@ -531,6 +565,20 @@
     a.download = 'bingo-board.png';
     a.click();
     showToast('Image downloaded (clipboard not supported)');
+  }
+
+  function topBarRect(ctx, x, y, w, barH, r, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + barH);
+    ctx.lineTo(x, y + barH);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.fill();
   }
 
   function roundRect(ctx, x, y, w, h, r, fill) {
