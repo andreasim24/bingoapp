@@ -15,7 +15,7 @@
     --text-secondary: #7a569b;
     --accent: #592c82;
     --accent-hover: #351b3d;
-    --selected: #22c55e;
+    --selected: #592c82;
     --selected-text: #fff;
     --border: #ded5e6;
     --cell-bg: #fff;
@@ -28,6 +28,7 @@
     --shadow: 0 2px 12px rgba(89,44,130,0.1);
     --toast-bg: #351b3d;
     --toast-text: #fff;
+    --cell-font-size: 1rem;
   }
 
   [data-theme="dark"] {
@@ -37,7 +38,7 @@
     --text-secondary: #bda4d0;
     --accent: #c95df6;
     --accent-hover: #9a0cd5;
-    --selected: #16a34a;
+    --selected: #c95df6;
     --selected-text: #fff;
     --border: #3a2450;
     --cell-bg: #251436;
@@ -63,20 +64,13 @@
   }
 
   .top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 12px 24px;
-    width: 100%;
+    display: none;
   }
 
-  .logo-text {
-    font-family: 'Source Sans 3', sans-serif;
-    font-size: 2rem;
-    font-weight: 900;
-    color: var(--accent);
-    letter-spacing: 3px;
-    line-height: 1;
+  .header-img {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 
   .main-layout {
@@ -89,64 +83,7 @@
     padding: 0 24px;
   }
 
-  .hero {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding: 8px 16px 0;
-    width: 100%;
-  }
 
-  .hero-text {
-    text-align: left;
-  }
-
-  .hero-text h1 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 4px;
-    line-height: 1.2;
-  }
-
-  .hero-text p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-  }
-
-  .robot-img {
-    width: 80px;
-    height: auto;
-    flex-shrink: 0;
-    animation: floatBob 3s ease-in-out infinite;
-    filter: drop-shadow(0 4px 12px rgba(89, 44, 130, 0.3));
-  }
-
-  @keyframes floatBob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
-  }
-
-  .page-header {
-    text-align: center;
-    padding: 8px 16px 0;
-    width: 100%;
-    display: none;
-  }
-
-  .page-header h1 {
-    font-size: 1.8rem;
-    font-weight: 800;
-    color: var(--accent);
-    margin-bottom: 4px;
-    line-height: 1.2;
-  }
-
-  .page-header p {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-  }
 
   .toolbar {
     display: flex;
@@ -155,6 +92,17 @@
     gap: 8px;
     padding: 14px 0;
     width: 100%;
+  }
+
+  .toolbar-group {
+    display: inline-flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+  }
+
+  .font-size-controls {
+    display: inline-flex;
+    gap: 4px;
   }
 
   .toolbar button {
@@ -183,7 +131,7 @@
   .board {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+    gap: 16px;
     user-select: none;
   }
 
@@ -196,8 +144,9 @@
     padding: 10px;
     background: var(--cell-bg);
     border: 2px solid var(--border);
+    border-top: 4px solid var(--border);
     border-radius: 12px;
-    font-size: 1rem;
+    font-size: var(--cell-font-size);
     font-weight: 600;
     line-height: 1.25;
     cursor: pointer;
@@ -207,21 +156,29 @@
     box-shadow: var(--shadow);
   }
 
+  /* Cycle brand accent colours across tiles */
+  .cell:nth-child(3n+1) { border-top-color: #d9d006; }
+  .cell:nth-child(3n+2) { border-top-color: #fd4500; }
+  .cell:nth-child(3n+3) { border-top-color: #00b5df; }
+
   .cell:hover { background: var(--cell-hover); transform: scale(1.03); }
 
   .cell.selected {
     background: var(--selected);
     color: var(--selected-text);
     border-color: var(--selected);
+    border-top-color: rgba(255,255,255,0.6);
     transform: scale(1.05);
-    box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+    box-shadow: var(--shadow);
   }
 
-  .cell.bingo-cell { animation: pulseGlow 0.6s ease-in-out infinite alternate; }
+  .cell.bingo-cell { animation: pulseGlow 4s ease-in-out infinite; }
 
   @keyframes pulseGlow {
-    from { box-shadow: 0 0 8px rgba(34, 197, 94, 0.4); }
-    to   { box-shadow: 0 0 24px rgba(34, 197, 94, 0.8); }
+    0%   { border-top-color: #d9d006; box-shadow: 0 0 10px 2px rgba(217, 208, 6, 0.7); }
+    33%  { border-top-color: #fd4500; box-shadow: 0 0 10px 2px rgba(253, 69, 0, 0.7); }
+    66%  { border-top-color: #00b5df; box-shadow: 0 0 10px 2px rgba(0, 181, 223, 0.7); }
+    100% { border-top-color: #d9d006; box-shadow: 0 0 10px 2px rgba(217, 208, 6, 0.7); }
   }
 
   .overlay {
@@ -291,66 +248,65 @@
 
   .page-footer {
     width: 100%;
-    text-align: center;
-    padding: 16px 24px;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0 16px;
   }
 
-  .page-footer .heart { color: #fd4500; }
-
-  @media (max-width: 860px) {
-    .robot-img { width: 70px; }
+  .footer-img {
+    height: 36px;
+    width: auto;
   }
 
   @media (max-width: 640px) {
     .main-layout { padding: 0 16px; }
-    .hero { gap: 12px; }
-    .hero-text h1 { font-size: 1.4rem; }
-    .robot-img { width: 60px; }
-    .top-bar { padding: 10px 16px; }
-    .logo-text { font-size: 1.6rem; }
-    .page-footer { padding: 12px 16px; }
+    .top-bar { padding: 12px 16px 6px; }
+    .footer-img { height: 28px; }
   }
 
   @media (max-width: 400px) {
-    .hero-text h1 { font-size: 1.2rem; }
-    .robot-img { width: 50px; }
-    .cell { font-size: 0.7rem; padding: 4px; border-radius: 8px; }
-    .board { gap: 6px; }
+    :root { --cell-font-size: 0.7rem; }
+    .cell { padding: 4px; border-radius: 8px; }
+    .board { gap: 10px; }
     .toolbar button { padding: 7px 12px; font-size: 0.8rem; }
     .overlay h2 { font-size: 2rem; }
   }
 
   @media (min-width: 401px) and (max-width: 600px) {
-    .cell { font-size: 0.78rem; }
+    :root { --cell-font-size: 0.78rem; }
   }
 </style>
 </head>
 <body>
 
-<div class="top-bar">
-  <span class="logo-text">IAG</span>
-</div>
+<div class="top-bar"></div>
 
 <div class="main-layout">
-  <div class="hero">
-    <div class="hero-text">
-      <h1>Who the Fact Are You?</h1>
-      <p>Find the answer on your board and tap it!</p>
-    </div>
-    <img src="robot.png" alt="DigiDays Robot" class="robot-img">
-  </div>
+  <img id="headerImg" src="assets/Bingo Light/Header Light Version_600x100.png" alt="Who the Fact Are You? Bingo" class="header-img">
 
   <div class="toolbar">
-    <button class="btn-primary" onclick="randomiseBoard()" title="Shuffle your board">&#x1f500; Randomise</button>
-    <button class="btn-secondary" onclick="resetBoard()" title="Clear all selections">&#x21a9;&#xfe0f; Reset</button>
-    <button class="btn-primary" onclick="copyBoard()" title="Copy board screenshot to clipboard">&#x1f4cb; Copy Board</button>
-    <button class="btn-secondary" onclick="toggleDarkMode()" id="themeBtn" title="Toggle dark mode">&#x1f319; Dark Mode</button>
+    <div class="toolbar-group">
+      <button class="btn-primary" onclick="randomiseBoard()" title="Shuffle your board">&#x1f500; Randomise</button>
+      <button class="btn-secondary" onclick="resetBoard()" title="Clear all selections">&#x21a9;&#xfe0f; Reset</button>
+      <button class="btn-primary" onclick="copyBoard()" title="Copy board screenshot to clipboard">&#x1f4cb; Copy Board</button>
+    </div>
+    <div class="toolbar-group">
+      <div class="font-size-controls">
+        <button class="btn-secondary" onclick="decreaseFontSize()" title="Decrease font size">A&#x2212;</button>
+        <button class="btn-secondary" onclick="increaseFontSize()" title="Increase font size">A&#x2b;</button>
+      </div>
+      <button class="btn-secondary" onclick="toggleDarkMode()" id="themeBtn" title="Toggle dark mode">&#x1f319; Dark Mode</button>
+    </div>
   </div>
 
   <div class="board-container">
     <div class="board" id="board"></div>
+  </div>
+
+  <div class="page-footer">
+    <img id="footerLeft" src="assets/Bingo Light/Digital Workplace.png" alt="Digital Workplace" class="footer-img">
+    <img id="footerRight" src="assets/Bingo Light/E2 Logo.png" alt="Engage Squared" class="footer-img">
   </div>
 </div>
 
@@ -362,8 +318,6 @@
 
 <canvas id="confetti"></canvas>
 <div class="toast" id="toast"></div>
-
-<div class="page-footer">Made with <span class="heart">&hearts;</span> by Engage Squared</div>
 
 <script>
   const BINGO_ITEMS = [
@@ -383,6 +337,7 @@
   function init() {
     buildBoard(shuffle([...BINGO_ITEMS]).slice(0, TOTAL));
     applyStoredTheme();
+    applyStoredFontSize();
   }
 
   function shuffle(arr) {
@@ -623,6 +578,36 @@
     for (let i = 0; i < lines.length; i++) ctx.fillText(lines[i], x, startY + i * lineH);
   }
 
+  let cellFontSize = null;
+
+  function getDefaultFontSize() {
+    return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--cell-font-size')) || 1;
+  }
+
+  function increaseFontSize() {
+    if (cellFontSize === null) cellFontSize = getDefaultFontSize();
+    cellFontSize = Math.min(+(cellFontSize + 0.1).toFixed(2), 2.5);
+    document.documentElement.style.setProperty('--cell-font-size', cellFontSize + 'rem');
+    try { localStorage.setItem('bingo-font-size', cellFontSize); } catch(e) {}
+  }
+
+  function decreaseFontSize() {
+    if (cellFontSize === null) cellFontSize = getDefaultFontSize();
+    cellFontSize = Math.max(+(cellFontSize - 0.1).toFixed(2), 0.4);
+    document.documentElement.style.setProperty('--cell-font-size', cellFontSize + 'rem');
+    try { localStorage.setItem('bingo-font-size', cellFontSize); } catch(e) {}
+  }
+
+  function applyStoredFontSize() {
+    try {
+      const stored = localStorage.getItem('bingo-font-size');
+      if (stored) {
+        cellFontSize = parseFloat(stored);
+        document.documentElement.style.setProperty('--cell-font-size', cellFontSize + 'rem');
+      }
+    } catch(e) {}
+  }
+
   function toggleDarkMode() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
@@ -641,6 +626,17 @@
   function updateThemeBtn(theme) {
     const btn = document.getElementById('themeBtn');
     btn.textContent = theme === 'dark' ? '\u2600\ufe0f Light Mode' : '\u{1f319} Dark Mode';
+    const headerImg = document.getElementById('headerImg');
+    headerImg.src = theme === 'dark'
+      ? 'assets/Bingo Dark/Header Dark Version_600x100.png'
+      : 'assets/Bingo Light/Header Light Version_600x100.png';
+    const isDark = theme === 'dark';
+    document.getElementById('footerLeft').src = isDark
+      ? 'assets/Bingo Dark/Digital Workplace_White.png'
+      : 'assets/Bingo Light/Digital Workplace.png';
+    document.getElementById('footerRight').src = isDark
+      ? 'assets/Bingo Dark/E2 logo white.png'
+      : 'assets/Bingo Light/E2 Logo.png';
   }
 
   function showToast(msg) {
