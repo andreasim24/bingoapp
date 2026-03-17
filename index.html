@@ -441,13 +441,19 @@
   function copyBoard() {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const scale = 2;
-    const cellSize = 130;
+    const cellSize = 180;
     const gap = 16;
-    const padding = 20;
+    const padding = 24;
     const boardSize = GRID * cellSize + (GRID - 1) * gap;
     const w = boardSize + padding * 2;
     const headerGap = 12;
-    const bingoMsgH = bingoLines.length > 0 ? 40 : 0;
+
+    // Measure actual rendered cell size and font size so canvas scales them proportionally
+    const realCell = document.querySelector('.cell');
+    const realCellSize = realCell ? realCell.getBoundingClientRect().width : 100;
+    const realFontPx = realCell ? parseFloat(getComputedStyle(realCell).fontSize) : 16;
+    const fontScale = cellSize / realCellSize;
+    const canvasFontSize = Math.round(realFontPx * fontScale);
 
     const headerSrc    = isDark ? 'assets/Bingo Dark/Header Dark Version_600x100.png'   : 'assets/Bingo Light/Header Light Version_600x100.png';
     const footerLeftSrc  = isDark ? 'assets/Bingo Dark/Digital Workplace_White.png'          : 'assets/Bingo Light/Digital Workplace.png';
@@ -457,7 +463,7 @@
       return new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = src; });
     }
 
-    Promise.all([loadImg(headerSrc), loadImg(footerLeftSrc), loadImg(footerRightSrc)])
+    Promise.all([loadImg(headerSrc), loadImg(footerLeftSrc), loadImg(footerRightSrc), document.fonts.ready])
       .then(([headerImg, leftImg, rightImg]) => {
         const headerH    = Math.round(w * headerImg.naturalHeight / headerImg.naturalWidth);
         const bingoMsgH  = bingoLines.length > 0 ? 40 : 0;
@@ -522,11 +528,12 @@
             }
 
             // Text
+            const fontSize = canvasFontSize;
             ctx.fillStyle = isSel ? selText : textCol;
-            ctx.font = '600 12px Source Sans 3, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif';
+            ctx.font = '600 ' + fontSize + 'px "Source Sans 3", Arial, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            wrapText(ctx, cell.text, x + cellSize / 2, y + cellSize / 2, cellSize - 16, 15);
+            wrapText(ctx, cell.text, x + cellSize / 2, y + cellSize / 2, cellSize - 24, Math.round(fontSize * 1.35));
           }
         }
 
