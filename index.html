@@ -130,7 +130,7 @@
 
   .board {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 16px;
     user-select: none;
   }
@@ -153,6 +153,8 @@
     transition: background 0.2s, border-color 0.2s, transform 0.15s;
     word-break: break-word;
     hyphens: auto;
+    overflow: hidden;
+    max-width: 160px;
     box-shadow: var(--shadow);
   }
 
@@ -321,12 +323,16 @@
 
 <script>
   const BINGO_ITEMS = [
-    "Synergy", "Pivot", "Bandwidth", "Leverage", "Alignment",
-    "Deep Dive", "Touch Base", "Quick Wins", "Action Items", "Drill Down",
-    "Game Changer", "Best Practice", "Stakeholders", "Value-Add", "Pain Point",
-    "Loop In", "On My Radar", "Circle Back", "Move Needle", "Low-Hanging",
-    "Unpack That", "Streamline", "Onboarding", "KPIs", "Ecosystem",
-    "Scalable", "Proactive", "Roadmap", "Empower", "Innovate", "Agile", "Optimize"
+    "Venetian", "Birthdays", "Duodecimal", "1982", "Argon",
+    "Dark side", "Gluon", "Dorian", "Neapolitan", "Ostinato",
+    "Sync", "Advance", "Ethiopia", "Spice", "Barbie",
+    "The Wild", "Friends", "11", "1985", "Clowder",
+    "Chow Chow", "Cygnet", "Jaguar", "Sith", "LEGO",
+    "New Zealand", "Turkey", "Durian", "France", "Reverse gear",
+    "Florentine", "Madagascar", "Rhubarb", "Lobster", "Duck",
+    "Anthropometry", "WMSD", "Supination", "Umbrella", "2000",
+    "True Detective", "Corleone", "Blade Runner", "Chartreuse", "Firebrick",
+    "Headlights", "Fuchsia", "Gainsboro"
   ];
 
   const GRID = 4;
